@@ -57,6 +57,7 @@ RAS_MaterialBucket::RAS_MaterialBucket(RAS_IPolyMaterial *mat)
 	m_nodeData.m_zsort = m_material->IsZSort();
 	m_nodeData.m_text = m_material->IsText();
 	m_nodeData.m_useLighting = m_material->UsesLighting();
+	m_nodeData.m_zoffset = m_material->GetZOffset();
 }
 
 RAS_MaterialBucket::~RAS_MaterialBucket()
@@ -210,7 +211,10 @@ void RAS_MaterialBucket::GenerateTree(RAS_ManagerDownwardNode& downwardRoot, RAS
 void RAS_MaterialBucket::BindNode(const RAS_MaterialNodeTuple& tuple)
 {
 	RAS_ManagerNodeData *managerData = tuple.m_managerData;
-	managerData->m_rasty->SetCullFace(m_nodeData.m_cullFace);
+	RAS_Rasterizer *rasty = managerData->m_rasty;
+	rasty->SetCullFace(m_nodeData.m_cullFace);
+	rasty->SetPolygonOffset(-m_nodeData.m_zoffset, 0.0f);
+
 	if (!managerData->m_shaderOverride) {
 		ActivateMaterial(managerData->m_rasty);
 	}
