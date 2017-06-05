@@ -88,12 +88,12 @@ RAS_Rasterizer::DrawType LA_BlenderLauncher::GetRasterizerDrawMode()
 		case OB_BOUNDBOX:
 		case OB_WIRE:
 		{
-			drawmode = RAS_Rasterizer::RAS_WIREFRAME;
+			drawmode = RAS_Rasterizer::RAS_TEXTURED;
 			break;
 		}
 		case OB_SOLID:
 		{
-			drawmode = RAS_Rasterizer::RAS_SOLID;
+			drawmode = RAS_Rasterizer::RAS_TEXTURED;
 			break;
 		}
 		case OB_MATERIAL:
