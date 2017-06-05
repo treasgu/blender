@@ -232,6 +232,9 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 			GPUPass *pass = GPU_material_get_pass(gpumat);
 			GPUShader *shader = GPU_pass_shader(pass);
 			GPU_shader_bind(shader);
+			int loc = GPU_shader_get_uniform(shader, "gre");
+			float gre = 1.0f;
+			GPU_shader_uniform_float(shader, loc, gre);
 		}
 		rasty->IndexPrimitives(tuple.m_displayArrayData->m_storageInfo);
 	}
