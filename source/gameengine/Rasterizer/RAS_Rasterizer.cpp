@@ -69,6 +69,10 @@ extern "C" {
 
 #include "CM_Message.h"
 
+struct GlobalLightData {
+	EEVEE_Light light[128];
+};
+
 RAS_Rasterizer::OffScreens::OffScreens()
 	:m_width(0),
 	m_height(0),
@@ -216,8 +220,7 @@ RAS_Rasterizer::RAS_Rasterizer()
 	m_shadowMode(RAS_SHADOW_NONE),
 	m_invertFrontFace(false),
 	m_last_frontface(true),
-	m_overrideShader(RAS_OVERRIDE_SHADER_NONE),
-	m_lightsData(nullptr)
+	m_overrideShader(RAS_OVERRIDE_SHADER_NONE)
 {
 	m_viewmatrix.setIdentity();
 	m_viewinvmatrix.setIdentity();
@@ -1228,6 +1231,8 @@ void RAS_Rasterizer::DesactivateOverrideShaderInstancing()
  * has a maximum of 8 lights (simultaneous), so 20 * 8 lights are possible in
  * a scene. */
 
+static GlobalLightData m_lightsData;
+
 void RAS_Rasterizer::ProcessLighting(bool uselights, const MT_Transform& viewmat, RAS_MeshSlot *ms)
 {
 	bool enable = false;
@@ -1269,15 +1274,18 @@ void RAS_Rasterizer::ProcessLighting(bool uselights, const MT_Transform& viewmat
 			RAS_OpenGLLight *light = (*lit);
 
 			if (light->UpdateEeveeLightData(kxscene, layer, count)) {
-				m_lightsData->light[count] = light->GetEeveeLight();
+				m_lightsData.light[count] = light->GetEeveeLight();
 				count++;
 			}
 		}
 
 		GPUShader *shader = ms->GetGpuShader();
 		if (shader) {
-			GPU_uniformbuffer_update(m_ubo, m_lightsData);
-			//int uboloc = GPU_shader_get_uniform_block(shader, "light_block"); ??? bind ubo from loc?
+			GPU_uniformbuffer_update(m_ubo, &m_lightsData);
+			int uboloc = GPU_shader_get_uniform_block(shader, "light_block");
+			GPU_shader_uniform_buffer(shader, uboloc, m_ubo);
+			int lightcountloc = GPU_shader_get_uniform(shader, "light_count");
+			GPU_shader_uniform_int(shader, lightcountloc, count);
 		}
 
 		PopMatrix();

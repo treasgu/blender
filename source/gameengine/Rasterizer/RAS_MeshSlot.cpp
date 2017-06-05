@@ -41,6 +41,11 @@
 #include "GPU_material.h"
 #include "GPU_shader.h"
 
+/* temp */
+#include "KX_Globals.h"
+#include "KX_Scene.h"
+#include "KX_Camera.h"
+
 extern "C" {
 #  include "../gpu/intern/gpu_codegen.h"
 }
@@ -239,6 +244,10 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 			GPUPass *pass = GPU_material_get_pass(gpumat);
 			m_gpuShader = GPU_pass_shader(pass);
 			GPU_shader_bind(m_gpuShader);
+
+			/* uniforms temp */
+			int camposloc = GPU_shader_get_uniform(m_gpuShader, "cameraPos");
+			GPU_shader_uniform_vector(m_gpuShader, camposloc, 3, 1, KX_GetActiveScene()->GetActiveCamera()->NodeGetWorldPosition().getValue());
 		}
 		rasty->IndexPrimitives(tuple.m_displayArrayData->m_storageInfo);
 	}

@@ -41,10 +41,6 @@ typedef struct EEVEE_Light {
 	float forwardvec[3], lamptype;
 } EEVEE_Light;
 
-struct GlobalLightData {
-	EEVEE_Light light[128];
-};
-
 class RAS_OpenGLLight : public RAS_ILightObject
 {
 
