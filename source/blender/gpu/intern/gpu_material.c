@@ -2452,24 +2452,10 @@ GPUMaterial *GPU_material_from_eevee(Scene *scene, Material *ma,
 	mat->is_opensubdiv = false;
 	mat->har = ma->har;
 
-	/* render pipeline option */
-	bool new_shading_nodes = true;
-	if (!new_shading_nodes && (ma->mode & MA_TRANSP))
-		GPU_material_enable_alpha(mat);
-	else if (new_shading_nodes && ma->alpha < 1.0f)
-		GPU_material_enable_alpha(mat);
+	ntreeGPUMaterialNodes(ma->nodetree, mat, NODE_NEWER_SHADING);
 
-	if (ma->nodetree && ma->use_nodes) {
-		/* create nodes */
-		ntreeGPUMaterialNodes(ma->nodetree, mat, NODE_NEW_SHADING);
-	}
-	
-	/* create blender material first */
 	outlink = GPU_blender_material(mat, ma);
-	/* Replace material pass */
 	mat->pass = GPU_generate_pass_new(&mat->nodes, outlink, vert_code, geom_code, frag_lib, defines);
-
-	GPU_material_output_link(mat, outlink);
 
 	link = MEM_callocN(sizeof(LinkData), "GPUMaterialLink");
 	link->data = mat;
