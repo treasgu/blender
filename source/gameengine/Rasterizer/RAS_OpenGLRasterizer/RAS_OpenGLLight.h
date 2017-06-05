@@ -28,22 +28,39 @@
 #include "RAS_ILightObject.h"
 
 class RAS_Rasterizer;
-class RAS_MeshSlot;
 struct GPULamp;
 struct Image;
+
+/* ************ LIGHT UBO ************* */
+typedef struct EEVEE_Light {
+	float position[3], dist;
+	float color[3], spec;
+	float spotsize, spotblend, radius, shadowid;
+	float rightvec[3], sizex;
+	float upvec[3], sizey;
+	float forwardvec[3], lamptype;
+} EEVEE_Light;
+
+struct GlobalLightData {
+	EEVEE_Light light[128];
+};
 
 class RAS_OpenGLLight : public RAS_ILightObject
 {
 
 	RAS_Rasterizer *m_rasterizer;
-
+	
 	GPULamp *GetGPULamp();
+
+private:
+
+	EEVEE_Light m_eeveeLight;
 
 public:
 	RAS_OpenGLLight(RAS_Rasterizer *ras);
 	~RAS_OpenGLLight();
 
-	bool ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer, int slot, RAS_MeshSlot *ms);
+	bool UpdateEeveeLightData(KX_Scene *kxscene, int oblayer, int slot);
 
 	RAS_OpenGLLight *Clone()
 	{
@@ -62,4 +79,5 @@ public:
 	Image *GetTextureImage(short texslot);
 	void Update();
 	void SetShadowUpdateState(short state);
+	EEVEE_Light GetEeveeLight();
 };

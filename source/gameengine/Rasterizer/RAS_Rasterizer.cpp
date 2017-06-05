@@ -57,6 +57,7 @@
 
 extern "C" {
 #  include "BLF_api.h"
+#  include "GPU_uniformbuffer.h"
 }
 
 #include "MEM_guardedalloc.h"
@@ -215,7 +216,8 @@ RAS_Rasterizer::RAS_Rasterizer()
 	m_shadowMode(RAS_SHADOW_NONE),
 	m_invertFrontFace(false),
 	m_last_frontface(true),
-	m_overrideShader(RAS_OVERRIDE_SHADER_NONE)
+	m_overrideShader(RAS_OVERRIDE_SHADER_NONE),
+	m_lightsData(nullptr)
 {
 	m_viewmatrix.setIdentity();
 	m_viewinvmatrix.setIdentity();
@@ -224,10 +226,13 @@ RAS_Rasterizer::RAS_Rasterizer()
 	m_storage.reset(new RAS_StorageVBO(&m_storageAttribs));
 
 	m_numgllights = m_impl->GetNumLights();
+
+	m_ubo = GPU_uniformbuffer_create(sizeof(EEVEE_Light) * m_numgllights, nullptr, nullptr);
 }
 
 RAS_Rasterizer::~RAS_Rasterizer()
 {
+	GPU_uniformbuffer_free(m_ubo);
 }
 
 void RAS_Rasterizer::Enable(RAS_Rasterizer::EnableBit bit)
@@ -1263,10 +1268,18 @@ void RAS_Rasterizer::ProcessLighting(bool uselights, const MT_Transform& viewmat
 		for (lit = m_lights.begin(), count = 0; !(lit == m_lights.end()) && count < m_numgllights; ++lit) {
 			RAS_OpenGLLight *light = (*lit);
 
-			if (light->ApplyFixedFunctionLighting(kxscene, layer, count, ms)) {
+			if (light->UpdateEeveeLightData(kxscene, layer, count)) {
+				m_lightsData->light[count] = light->GetEeveeLight();
 				count++;
 			}
 		}
+
+		GPUShader *shader = ms->GetGpuShader();
+		if (shader) {
+			GPU_uniformbuffer_update(m_ubo, m_lightsData);
+			//int uboloc = GPU_shader_get_uniform_block(shader, "light_block"); ??? bind ubo from loc?
+		}
+
 		PopMatrix();
 
 		enable = count > 0;

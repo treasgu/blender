@@ -60,6 +60,8 @@ class RAS_ILightObject;
 class SCA_IScene;
 class RAS_ISync;
 struct KX_ClientObjectInfo;
+struct GPUUniformBuffer;
+struct GlobalLightData;
 class KX_RayCast;
 
 struct GPUShader;
@@ -302,6 +304,9 @@ private:
 
 	/* fogging vars */
 	bool m_fogenabled;
+
+	GPUUniformBuffer *m_ubo;
+	GlobalLightData *m_lightsData;
 
 	double m_time;
 	MT_Vector3 m_ambient;

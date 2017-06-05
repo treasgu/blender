@@ -7,7 +7,6 @@ uniform mat4 ProjectionMatrix;
 uniform samplerCube probeFiltered;
 uniform float lodMax;
 uniform vec3 shCoefs[9];
-uniform float gre;
 
 #ifndef USE_LTC
 uniform sampler2D brdfLut;
@@ -272,5 +271,5 @@ vec3 eevee_surface_lit(vec3 world_normal, vec3 albedo, vec3 f0, float roughness,
 
 	indirect_radiance += spherical_harmonics(sd.N, shCoefs) * albedo;
 
-	return vec3(gre, 0.0, 0.0);
+	return radiance + indirect_radiance * ao;
 }

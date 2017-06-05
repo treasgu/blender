@@ -66,7 +66,12 @@ RAS_OpenGLLight::~RAS_OpenGLLight()
 	}
 }
 
-bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer, int slot, RAS_MeshSlot *ms)
+EEVEE_Light RAS_OpenGLLight::GetEeveeLight()
+{
+	return m_eeveeLight;
+}
+
+bool RAS_OpenGLLight::UpdateEeveeLightData(KX_Scene *kxscene, int oblayer, int slot)
 {
 	//KX_Scene *lightscene = (KX_Scene *)m_scene;
 	//KX_LightObject *kxlight = (KX_LightObject *)m_light;
@@ -154,11 +159,92 @@ bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer,
 	//glLightfv((GLenum)(GL_LIGHT0 + slot), GL_SPECULAR, vec);
 	//glEnable((GLenum)(GL_LIGHT0 + slot));
 
-	GPUShader *shader = ms->GetGpuShader();
-	if (shader) {
-		int loc = GPU_shader_get_uniform(shader, "gre");
-		float gre = 1.0f;
-		GPU_shader_uniform_float(shader, loc, gre);
+	GPULamp *lamp = GetGPULamp();
+	KX_LightObject *kxlight = (KX_LightObject *)m_light;
+
+	if (lamp != nullptr && kxlight->GetSGNode()) {
+		float obmat[4][4];
+		// lights don't get their openGL matrix updated, do it now
+		if (kxlight->GetSGNode()->IsDirty())
+			kxlight->GetOpenGLMatrix();
+		float *dobmat = kxlight->GetOpenGLMatrixPtr()->getPointer();
+
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++, dobmat++)
+				obmat[i][j] = (float)*dobmat;
+		int hide = kxlight->GetVisible() ? 0 : 1;
+		GPU_lamp_update(lamp, m_layer, hide, obmat);
+		GPU_lamp_update_colors(lamp, m_color[0], m_color[1],
+			m_color[2], m_energy);
+		GPU_lamp_update_distance(lamp, m_distance, m_att1, m_att2, m_coeff_const, m_coeff_lin, m_coeff_quad);
+		GPU_lamp_update_spot(lamp, m_spotsize, m_spotblend);
+		Lamp *la = (Lamp *)kxlight->GetBlenderObject()->data;
+		float mat[4][4], scale[3], power;
+
+		/* Position */
+		copy_v3_v3(m_eeveeLight.position, obmat[3]);
+
+		/* Color */
+		srgb_to_linearrgb_v3_v3(m_eeveeLight.color, &la->r);
+
+		/* Influence Radius */
+		m_eeveeLight.dist = la->dist;
+
+		/* Vectors */
+		normalize_m4_m4_ex(mat, obmat, scale);
+		copy_v3_v3(m_eeveeLight.forwardvec, mat[2]);
+		normalize_v3(m_eeveeLight.forwardvec);
+		negate_v3(m_eeveeLight.forwardvec);
+
+		copy_v3_v3(m_eeveeLight.rightvec, mat[0]);
+		normalize_v3(m_eeveeLight.rightvec);
+
+		copy_v3_v3(m_eeveeLight.upvec, mat[1]);
+		normalize_v3(m_eeveeLight.upvec);
+
+		/* Spot size & blend */
+		if (la->type == LA_SPOT) {
+			m_eeveeLight.sizex = scale[0] / scale[2];
+			m_eeveeLight.sizey = scale[1] / scale[2];
+			m_eeveeLight.spotsize = cosf(la->spotsize * 0.5f);
+			m_eeveeLight.spotblend = (1.0f - m_eeveeLight.spotsize) * la->spotblend;
+			m_eeveeLight.radius = max_ff(0.001f, la->area_size);
+		}
+		else if (la->type == LA_AREA) {
+			m_eeveeLight.sizex = max_ff(0.0001f, la->area_size * scale[0] * 0.5f);
+			if (la->area_shape == LA_AREA_RECT) {
+				m_eeveeLight.sizey = max_ff(0.0001f, la->area_sizey * scale[1] * 0.5f);
+			}
+			else {
+				m_eeveeLight.sizey = max_ff(0.0001f, la->area_size * scale[1] * 0.5f);
+			}
+		}
+		else {
+			m_eeveeLight.radius = max_ff(0.001f, la->area_size);
+		}
+
+		/* Make illumination power constant */
+		if (la->type == LA_AREA) {
+			power = 1.0f / (m_eeveeLight.sizex * m_eeveeLight.sizey * 4.0f * M_PI) /* 1/(w*h*Pi) */
+				* 80.0f; /* XXX : Empirical, Fit cycles power */
+		}
+		else if (la->type == LA_SPOT || la->type == LA_LOCAL) {
+			power = 1.0f / (4.0f * m_eeveeLight.radius * m_eeveeLight.radius * M_PI * M_PI) /* 1/(4*r²*Pi²) */
+				* M_PI * M_PI * M_PI * 10.0; /* XXX : Empirical, Fit cycles power */
+
+			/* for point lights (a.k.a radius == 0.0) */
+			// power = M_PI * M_PI * 0.78; /* XXX : Empirical, Fit cycles power */
+		}
+		else {
+			power = 1.0f;
+		}
+		mul_v3_fl(m_eeveeLight.color, power * la->energy);
+
+		/* Lamp Type */
+		m_eeveeLight.lamptype = (float)la->type;
+
+		/* No shadow by default */
+		m_eeveeLight.shadowid = -1.0f;
 	}
 
 	return true;
