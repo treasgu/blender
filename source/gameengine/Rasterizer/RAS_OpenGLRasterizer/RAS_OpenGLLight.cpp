@@ -29,7 +29,7 @@
 
 #include <stdio.h>
 
-
+#include "RAS_MeshSlot.h"
 #include "RAS_OpenGLLight.h"
 #include "RAS_Rasterizer.h"
 #include "RAS_ICanvas.h"
@@ -45,6 +45,7 @@
 
 #include "GPU_lamp.h"
 #include "GPU_material.h"
+#include "GPU_shader.h"
 
 RAS_OpenGLLight::RAS_OpenGLLight(RAS_Rasterizer *ras)
 	:m_rasterizer(ras)
@@ -65,7 +66,7 @@ RAS_OpenGLLight::~RAS_OpenGLLight()
 	}
 }
 
-bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer, int slot)
+bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer, int slot, RAS_MeshSlot *ms)
 {
 	//KX_Scene *lightscene = (KX_Scene *)m_scene;
 	//KX_LightObject *kxlight = (KX_LightObject *)m_light;
@@ -152,6 +153,13 @@ bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer,
 
 	//glLightfv((GLenum)(GL_LIGHT0 + slot), GL_SPECULAR, vec);
 	//glEnable((GLenum)(GL_LIGHT0 + slot));
+
+	GPUShader *shader = ms->GetGpuShader();
+	if (shader) {
+		int loc = GPU_shader_get_uniform(shader, "gre");
+		float gre = 1.0f;
+		GPU_shader_uniform_float(shader, loc, gre);
+	}
 
 	return true;
 }

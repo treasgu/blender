@@ -28,6 +28,7 @@
 #include "RAS_ILightObject.h"
 
 class RAS_Rasterizer;
+class RAS_MeshSlot;
 struct GPULamp;
 struct Image;
 
@@ -42,7 +43,7 @@ public:
 	RAS_OpenGLLight(RAS_Rasterizer *ras);
 	~RAS_OpenGLLight();
 
-	bool ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer, int slot);
+	bool ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer, int slot, RAS_MeshSlot *ms);
 
 	RAS_OpenGLLight *Clone()
 	{

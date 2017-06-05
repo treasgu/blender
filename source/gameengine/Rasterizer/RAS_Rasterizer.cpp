@@ -1223,7 +1223,7 @@ void RAS_Rasterizer::DesactivateOverrideShaderInstancing()
  * has a maximum of 8 lights (simultaneous), so 20 * 8 lights are possible in
  * a scene. */
 
-void RAS_Rasterizer::ProcessLighting(bool uselights, const MT_Transform& viewmat)
+void RAS_Rasterizer::ProcessLighting(bool uselights, const MT_Transform& viewmat, RAS_MeshSlot *ms)
 {
 	bool enable = false;
 	int layer = -1;
@@ -1263,7 +1263,7 @@ void RAS_Rasterizer::ProcessLighting(bool uselights, const MT_Transform& viewmat
 		for (lit = m_lights.begin(), count = 0; !(lit == m_lights.end()) && count < m_numgllights; ++lit) {
 			RAS_OpenGLLight *light = (*lit);
 
-			if (light->ApplyFixedFunctionLighting(kxscene, layer, count)) {
+			if (light->ApplyFixedFunctionLighting(kxscene, layer, count, ms)) {
 				count++;
 			}
 		}

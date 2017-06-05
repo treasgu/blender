@@ -41,6 +41,7 @@ class RAS_MaterialBucket;
 class RAS_DisplayArrayBucket;
 struct DerivedMesh;
 struct GPUMaterial;
+struct GPUShader;
 class RAS_Deformer;
 class RAS_MeshObject;
 class RAS_MeshMaterial;
@@ -63,6 +64,7 @@ public:
 	DerivedMesh *m_pDerivedMesh;
 	RAS_MeshUser *m_meshUser;
 	GPUMaterial *m_gpuMat;
+	GPUShader *m_gpuShader;
 
 	/// Batch index used for batching render.
 	short m_batchPartIndex;
@@ -86,6 +88,7 @@ public:
 
 	void SetGpuMat(GPUMaterial *mat);
 	GPUMaterial *GetGpuMat();
+	GPUShader *GetGpuShader();
 };
 
 typedef std::vector<RAS_MeshSlot *> RAS_MeshSlotList;

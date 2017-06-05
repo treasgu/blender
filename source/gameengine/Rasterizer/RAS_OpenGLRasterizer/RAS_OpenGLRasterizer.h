@@ -121,7 +121,6 @@ public:
 	 */
 	void EnableLights();
 	void DisableLights();
-	void ProcessLighting(bool uselights, const MT_Transform &viewmat);
 
 	void DisableForText();
 	void RenderText3D(int fontid, const std::string& text, int size, int dpi,

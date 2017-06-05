@@ -740,7 +740,7 @@ public:
 	        int fontid, const std::string& text, int size, int dpi,
 	        const float color[4], const float mat[16], float aspect);
 
-	void ProcessLighting(bool uselights, const MT_Transform &trans);
+	void ProcessLighting(bool uselights, const MT_Transform &trans, RAS_MeshSlot *ms);
 
 	void PushMatrix();
 	void PopMatrix();

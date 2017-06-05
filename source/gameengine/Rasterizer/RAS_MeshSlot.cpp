@@ -67,7 +67,8 @@ RAS_MeshSlot::RAS_MeshSlot()
 	m_pDerivedMesh(nullptr),
 	m_meshUser(nullptr),
 	m_batchPartIndex(-1),
-	m_gpuMat(nullptr)
+	m_gpuMat(nullptr),
+	m_gpuShader(nullptr)
 {
 }
 
@@ -89,7 +90,8 @@ RAS_MeshSlot::RAS_MeshSlot(const RAS_MeshSlot& slot)
 	m_pDerivedMesh(nullptr),
 	m_meshUser(nullptr),
 	m_batchPartIndex(-1),
-	m_gpuMat(nullptr)
+	m_gpuMat(nullptr),
+	m_gpuShader(nullptr)
 {
 	if (m_displayArrayBucket) {
 		m_displayArrayBucket->AddRef();
@@ -170,6 +172,11 @@ GPUMaterial *RAS_MeshSlot::GetGpuMat()
 	return m_gpuMat;
 }
 
+GPUShader *RAS_MeshSlot::GetGpuShader()
+{
+	return m_gpuShader;
+}
+
 void RAS_MeshSlot::GenerateTree(RAS_DisplayArrayUpwardNode& root, RAS_UpwardTreeLeafs& leafs)
 {
 	m_node.SetParent(&root);
@@ -186,7 +193,7 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 
 
 	if (!managerData->m_shaderOverride) {
-		rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans);
+		rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans, this);
 		materialData->m_material->ActivateMeshSlot(this, rasty);
 	}
 
@@ -230,11 +237,8 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 		GPUMaterial *gpumat = GetGpuMat();
 		if (gpumat && !(rasty->GetDrawingMode() & RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != 0)) {
 			GPUPass *pass = GPU_material_get_pass(gpumat);
-			GPUShader *shader = GPU_pass_shader(pass);
-			GPU_shader_bind(shader);
-			int loc = GPU_shader_get_uniform(shader, "gre");
-			float gre = 1.0f;
-			GPU_shader_uniform_float(shader, loc, gre);
+			m_gpuShader = GPU_pass_shader(pass);
+			GPU_shader_bind(m_gpuShader);
 		}
 		rasty->IndexPrimitives(tuple.m_displayArrayData->m_storageInfo);
 	}
