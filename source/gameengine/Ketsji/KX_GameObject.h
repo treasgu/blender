@@ -400,7 +400,7 @@ public:
 	/**
 	 * Return the mass of the object
 	 */
-		MT_Scalar
+		float
 	GetMass();
 
 	/**

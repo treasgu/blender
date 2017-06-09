@@ -333,12 +333,12 @@ void KX_GameObject::SetParent(KX_GameObject* obj, bool addToCompound, bool ghost
 		// Make sure the objects have some scale
 		MT_Vector3 scale1 = NodeGetWorldScaling();
 		MT_Vector3 scale2 = obj->NodeGetWorldScaling();
-		if (fabs(scale2[0]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(scale2[1]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(scale2[2]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(scale1[0]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(scale1[1]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(scale1[2]) < (MT_Scalar)FLT_EPSILON) { return; }
+		if (fabs(scale2[0]) < (float)FLT_EPSILON ||
+			fabs(scale2[1]) < (float)FLT_EPSILON ||
+			fabs(scale2[2]) < (float)FLT_EPSILON ||
+			fabs(scale1[0]) < (float)FLT_EPSILON ||
+			fabs(scale1[1]) < (float)FLT_EPSILON ||
+			fabs(scale1[2]) < (float)FLT_EPSILON) { return; }
 
 		KX_Scene *scene = GetScene();
 		// Remove us from our old parent and set our new parent
@@ -1076,10 +1076,10 @@ const MT_Vector4& KX_GameObject::GetObjectColor()
 
 void KX_GameObject::AlignAxisToVect(const MT_Vector3& dir, int axis, float fac)
 {
-	const MT_Scalar eps = 3.0f * MT_EPSILON;
+	const float eps = 3.0f * MT_EPSILON;
 	MT_Matrix3x3 orimat;
 	MT_Vector3 vect,ori,z,x,y;
-	MT_Scalar len;
+	float len;
 
 	// check on valid node in case a python controller holds a reference to a deleted object
 	if (!GetSGNode())
@@ -1176,7 +1176,7 @@ void KX_GameObject::AlignAxisToVect(const MT_Vector3& dir, int axis, float fac)
 	}
 }
 
-MT_Scalar KX_GameObject::GetMass()
+float KX_GameObject::GetMass()
 {
 	if (m_pPhysicsController)
 	{
@@ -1332,9 +1332,9 @@ void KX_GameObject::NodeSetWorldScale(const MT_Vector3& scale)
 	{
 		// Make sure the objects have some scale
 		MT_Vector3 p_scale = parent->GetWorldScaling();
-		if (fabs(p_scale[0]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(p_scale[1]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(p_scale[2]) < (MT_Scalar)FLT_EPSILON)
+		if (fabs(p_scale[0]) < (float)FLT_EPSILON ||
+			fabs(p_scale[1]) < (float)FLT_EPSILON ||
+			fabs(p_scale[2]) < (float)FLT_EPSILON)
 		{ 
 			return; 
 		}
@@ -1360,9 +1360,9 @@ void KX_GameObject::NodeSetWorldPosition(const MT_Vector3& trans)
 	{
 		// Make sure the objects have some scale
 		MT_Vector3 scale = parent->GetWorldScaling();
-		if (fabs(scale[0]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(scale[1]) < (MT_Scalar)FLT_EPSILON ||
-			fabs(scale[2]) < (MT_Scalar)FLT_EPSILON)
+		if (fabs(scale[0]) < (float)FLT_EPSILON ||
+			fabs(scale[1]) < (float)FLT_EPSILON ||
+			fabs(scale[2]) < (float)FLT_EPSILON)
 		{ 
 			return; 
 		}
@@ -2467,7 +2467,7 @@ int KX_GameObject::pyattr_set_mass(PyObjectPlus *self_v, const KX_PYATTRIBUTE_DE
 {
 	KX_GameObject* self = static_cast<KX_GameObject*>(self_v);
 	PHY_IPhysicsController *spc = self->GetPhysicsController();
-	MT_Scalar val = PyFloat_AsDouble(value);
+	float val = PyFloat_AsDouble(value);
 	if (val < 0.0f) { /* also accounts for non float */
 		PyErr_SetString(PyExc_AttributeError, "gameOb.mass = float: KX_GameObject, expected a float zero or above");
 		return PY_SET_ATTR_FAIL;
@@ -2500,7 +2500,7 @@ int KX_GameObject::pyattr_set_lin_vel_min(PyObjectPlus *self_v, const KX_PYATTRI
 {
 	KX_GameObject* self = static_cast<KX_GameObject*>(self_v);
 	PHY_IPhysicsController *spc = self->GetPhysicsController();
-	MT_Scalar val = PyFloat_AsDouble(value);
+	float val = PyFloat_AsDouble(value);
 	if (val < 0.0f) { /* also accounts for non float */
 		PyErr_SetString(PyExc_AttributeError, "gameOb.linVelocityMin = float: KX_GameObject, expected a float zero or above");
 		return PY_SET_ATTR_FAIL;
@@ -2523,7 +2523,7 @@ int KX_GameObject::pyattr_set_lin_vel_max(PyObjectPlus *self_v, const KX_PYATTRI
 {
 	KX_GameObject* self = static_cast<KX_GameObject*>(self_v);
 	PHY_IPhysicsController *spc = self->GetPhysicsController();
-	MT_Scalar val = PyFloat_AsDouble(value);
+	float val = PyFloat_AsDouble(value);
 	if (val < 0.0f) { /* also accounts for non float */
 		PyErr_SetString(PyExc_AttributeError, "gameOb.linVelocityMax = float: KX_GameObject, expected a float zero or above");
 		return PY_SET_ATTR_FAIL;
@@ -2546,7 +2546,7 @@ int KX_GameObject::pyattr_set_ang_vel_min(PyObjectPlus *self_v, const KX_PYATTRI
 {
 	KX_GameObject *self = static_cast<KX_GameObject*>(self_v);
 	PHY_IPhysicsController *spc = self->GetPhysicsController();
-	MT_Scalar val = PyFloat_AsDouble(value);
+	float val = PyFloat_AsDouble(value);
 	if (val < 0.0f) { /* also accounts for non float */
 		PyErr_SetString(PyExc_AttributeError,
 		                "gameOb.angularVelocityMin = float: KX_GameObject, expected a nonnegative float");
@@ -2570,7 +2570,7 @@ int KX_GameObject::pyattr_set_ang_vel_max(PyObjectPlus *self_v, const KX_PYATTRI
 {
 	KX_GameObject *self = static_cast<KX_GameObject*>(self_v);
 	PHY_IPhysicsController *spc = self->GetPhysicsController();
-	MT_Scalar val = PyFloat_AsDouble(value);
+	float val = PyFloat_AsDouble(value);
 	if (val < 0.0f) { /* also accounts for non float */
 		PyErr_SetString(PyExc_AttributeError,
 		                "gameOb.angularVelocityMax = float: KX_GameObject, expected a nonnegative float");
@@ -3029,7 +3029,7 @@ int KX_GameObject::pyattr_set_timeOffset(PyObjectPlus *self_v, const KX_PYATTRIB
 {
 	KX_GameObject* self = static_cast<KX_GameObject*>(self_v);
 	if (self->GetSGNode()) {
-		MT_Scalar val = PyFloat_AsDouble(value);
+		float val = PyFloat_AsDouble(value);
 		SG_Node *sg_parent= self->GetSGNode()->GetSGParent();
 		if (val < 0.0f) { /* also accounts for non float */
 			PyErr_SetString(PyExc_AttributeError, "gameOb.timeOffset = float: KX_GameObject, expected a float zero or above");
@@ -3692,7 +3692,7 @@ KX_PYMETHODDEF_DOC_O(KX_GameObject, getVectTo,
 {
 	MT_Vector3 toPoint, fromPoint;
 	MT_Vector3 toDir, locToDir;
-	MT_Scalar distance;
+	float distance;
 
 	SCA_LogicManager *logicmgr = GetScene()->GetLogicManager();
 	PyObject *returnValue;
