@@ -135,6 +135,7 @@ endif()
 		ge_logic_network 
 		extern_bullet 
 		bf_intern_guardedalloc 
+		bf_intern_mathfu
 		bf_intern_memutil 
 		bf_python_ext
 		bf_python_mathutils
