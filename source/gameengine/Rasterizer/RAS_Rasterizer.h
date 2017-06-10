@@ -38,6 +38,7 @@
 
 #include "MT_CmMatrix4x4.h"
 #include "MT_Matrix4x4.h"
+#include "MT_Transform.h"
 
 #include "RAS_DebugDraw.h"
 #include "RAS_Rect.h"
