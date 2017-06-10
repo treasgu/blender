@@ -881,7 +881,7 @@ MT_Matrix4x4 KX_KetsjiEngine::GetCameraProjectionMatrix(KX_Scene *scene, KX_Came
 	MT_Matrix4x4 projmat;
 	if (override_camera && !m_overrideCamData.m_perspective) {
 		// needed to get frustum planes for culling
-		projmat.setValue(m_overrideCamProjMat.getPointer());
+		projmat = MT_Matrix4x4(m_overrideCamProjMat.getPointer());
 	}
 	else {
 		RAS_FrameFrustum frustum;
