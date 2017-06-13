@@ -233,6 +233,20 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 			GPUPass *pass = GPU_material_get_pass(gpumat);
 			GPUShader *shader = GPU_pass_shader(pass);
 			GPU_shader_bind(shader);
+
+			/* uniforms */
+			int loc = GPU_shader_get_uniform(shader, "WorldNormalMatrix");
+			MT_Matrix4x4 modelview(m_meshUser->GetMatrix());
+			MT_Matrix4x4 worldnorm4(modelview.inverse().transposed());
+			float m[9];
+			int k = 0;
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 3; j++) {
+					m[k] = worldnorm4[i][j];
+					k++;
+				}
+			}
+			GPU_shader_uniform_vector(shader, loc, 9, 1, (float *)m);
 		}
 		rasty->IndexPrimitives(displayArrayData->m_storageInfo);
 	}

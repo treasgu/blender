@@ -4191,7 +4191,7 @@ void node_output_metallic(
 	vec4 diffuse, f0;
 	convert_metallic_to_specular(basecol, metallic, specular, diffuse, f0);
 
-	result = vec4(eevee_surface_lit(normal, diffuse.rgb, f0.rgb, roughness, occlusion) + emissive.rgb, 1.0 - transp);
+	result = vec4(worldNormal, 1.0);
 }
 
 void node_output_specular(
